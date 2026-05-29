@@ -10,6 +10,9 @@ function Menu() {
   const [cart, setCart] = useState({}); // Mapping of dish.id to quantity
   const [showReceipt, setShowReceipt] = useState(false);
 
+  const [filterVeg, setFilterVeg] = useState(false);
+  const [filterGlutenFree, setFilterGlutenFree] = useState(false);
+
   if (!moodData) return null;
 
   const categories = [
@@ -55,10 +58,12 @@ function Menu() {
     });
   };
 
-  const filteredDishes =
-    activeCategory === "all"
-      ? dishes
-      : dishes.filter((dish) => dish.category === activeCategory);
+  const filteredDishes = dishes.filter((dish) => {
+    const matchesCategory = activeCategory === "all" || dish.category === activeCategory;
+    const matchesVeg = !filterVeg || dish.isVeg;
+    const matchesGlutenFree = !filterGlutenFree || dish.glutenFree;
+    return matchesCategory && matchesVeg && matchesGlutenFree;
+  });
 
   const cartTotal = Object.keys(cart).reduce((sum, id) => {
     const dish = dishes.find(d => d.id === parseInt(id));
@@ -96,29 +101,86 @@ function Menu() {
               {moodData.recommendedCategory !== "all" && categoryLabels[moodData.recommendedCategory] && (
                 <button
                   onClick={() => setActiveCategory(moodData.recommendedCategory)}
-                  className={`flex-none px-6 py-3 font-black uppercase tracking-wider text-sm border-4 border-black transition-all ${
+                  className={`flex-none px-6 py-3 font-black uppercase tracking-wider text-sm border-4 border-black transition-all cursor-pointer ${
                     activeCategory === moodData.recommendedCategory
                       ? `${moodData.accentClass} text-black shadow-[6px_6px_0_0_white]`
                       : `bg-zinc-900 text-white hover:bg-zinc-800 border-white/20`
                   }`}
+                  style={{
+                    boxShadow: activeCategory === moodData.recommendedCategory 
+                      ? `6px 6px 0px 0px #ffffff, 0 10px 25px -5px ${moodData.glowColor || 'rgba(255,255,255,0.2)'}` 
+                      : ''
+                  }}
                 >
                   ✨ AI PICK: {categoryLabels[moodData.recommendedCategory]}
                 </button>
               )}
               
-              {categories.map((category) => (
-                <button
-                  key={category}
-                  onClick={() => setActiveCategory(category)}
-                  className={`flex-none px-6 py-3 font-black uppercase tracking-wider text-sm border-4 transition-all ${
-                    activeCategory === category
-                      ? `${moodData.accentClass} text-black border-black shadow-[6px_6px_0_0_white]`
-                      : "bg-black text-white border-white hover:bg-white hover:text-black"
-                  }`}
-                >
-                  {categoryLabels[category] || category}
-                </button>
-              ))}
+              {categories.map((category) => {
+                const isActive = activeCategory === category;
+                return (
+                  <button
+                    key={category}
+                    onClick={() => setActiveCategory(category)}
+                    className={`flex-none px-6 py-3 font-black uppercase tracking-wider text-sm border-4 transition-all cursor-pointer ${
+                      isActive
+                        ? `${moodData.accentClass} text-black border-black shadow-[6px_6px_0_0_white]`
+                        : "bg-black text-white border-white hover:bg-white hover:text-black"
+                    }`}
+                    style={{
+                      boxShadow: isActive 
+                        ? `6px 6px 0px 0px #ffffff, 0 10px 25px -5px ${moodData.glowColor || 'rgba(255,255,255,0.2)'}` 
+                        : ''
+                    }}
+                  >
+                    {categoryLabels[category] || category}
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* DIETARY TOGGLES */}
+            <div className="flex flex-wrap gap-4 mb-8 bg-zinc-950 p-4 border-4 border-white select-none items-center">
+              <span className="text-sm font-black uppercase tracking-wider text-zinc-400">
+                DIETARY PREFERENCES:
+              </span>
+              <button
+                onClick={() => setFilterVeg(!filterVeg)}
+                className={`px-4 py-2 font-black uppercase text-xs border-4 transition-all flex items-center gap-2 cursor-pointer ${
+                  filterVeg
+                    ? "bg-green-500 border-black text-black shadow-[4px_4px_0_0_white]"
+                    : "bg-black border-white text-white hover:bg-white hover:text-black"
+                }`}
+                style={{
+                  boxShadow: filterVeg 
+                    ? `4px 4px 0px 0px #ffffff, 0 0 20px ${moodData.glowColor || 'rgba(255,255,255,0.4)'}` 
+                    : ''
+                }}
+              >
+                <span>🥦 VEG ONLY</span>
+                <div className={`w-4 h-4 border-2 flex items-center justify-center ${filterVeg ? 'border-black' : 'border-white'}`}>
+                  {filterVeg && <div className="w-2 h-2 bg-black"></div>}
+                </div>
+              </button>
+
+              <button
+                onClick={() => setFilterGlutenFree(!filterGlutenFree)}
+                className={`px-4 py-2 font-black uppercase text-xs border-4 transition-all flex items-center gap-2 cursor-pointer ${
+                  filterGlutenFree
+                    ? "bg-amber-400 border-black text-black shadow-[4px_4px_0_0_white]"
+                    : "bg-black border-white text-white hover:bg-white hover:text-black"
+                }`}
+                style={{
+                  boxShadow: filterGlutenFree 
+                    ? `4px 4px 0px 0px #ffffff, 0 0 20px ${moodData.glowColor || 'rgba(255,255,255,0.4)'}` 
+                    : ''
+                }}
+              >
+                <span>🌾 GLUTEN-FREE</span>
+                <div className={`w-4 h-4 border-2 flex items-center justify-center ${filterGlutenFree ? 'border-black' : 'border-white'}`}>
+                  {filterGlutenFree && <div className="w-2 h-2 bg-black"></div>}
+                </div>
+              </button>
             </div>
 
             {/* DISH GRID */}
@@ -137,7 +199,12 @@ function Menu() {
 
           {/* BRUTALIST CART SIDEBAR */}
           <div className="lg:w-1/4">
-            <div className="sticky top-28 bg-black border-4 border-white shadow-[12px_12px_0_0_white] p-6">
+            <div 
+              className="sticky top-28 bg-black border-4 border-white p-6 transition-all duration-300"
+              style={{
+                boxShadow: `12px 12px 0px 0px #ffffff, 0 15px 40px -10px ${moodData.glowColor || 'rgba(255,255,255,0.15)'}`
+              }}
+            >
               <h2 className="text-3xl font-black uppercase border-b-4 border-white pb-4 mb-6 tracking-tighter">
                 YOUR HAUL 🛒
               </h2>
@@ -164,12 +231,21 @@ function Menu() {
               <div className="mt-6 pt-6 border-t-4 border-white">
                 <div className="flex justify-between items-end mb-6">
                   <span className="text-lg font-bold uppercase text-zinc-400">Total Vibe:</span>
-                  <span className={`text-4xl font-black ${moodData.textAccent}`}>₹{cartTotal}</span>
+                  <span className={`text-4xl font-black ${moodData.textAccent} transition-colors duration-1000`}>₹{cartTotal}</span>
                 </div>
                 <button 
                   disabled={cartItems.length === 0}
                   onClick={() => setShowReceipt(true)}
-                  className={`w-full py-4 font-black uppercase text-xl border-4 border-black transition-all ${cartItems.length === 0 ? 'bg-zinc-800 text-zinc-500 border-zinc-700 cursor-not-allowed' : `${moodData.accentClass} text-black shadow-[6px_6px_0_0_white] hover:bg-white hover:text-black hover:border-black hover:shadow-none`}`}
+                  className={`w-full py-4 font-black uppercase text-xl border-4 border-black transition-all cursor-pointer ${
+                    cartItems.length === 0 
+                      ? 'bg-zinc-800 text-zinc-500 border-zinc-700 cursor-not-allowed' 
+                      : `${moodData.accentClass} text-black shadow-[6px_6px_0_0_white] hover:bg-white hover:text-black hover:border-black hover:shadow-none`
+                  }`}
+                  style={{
+                    boxShadow: cartItems.length > 0 
+                      ? `6px 6px 0px 0px #ffffff, 0 10px 25px -5px ${moodData.glowColor || 'rgba(255,255,255,0.2)'}` 
+                      : ''
+                  }}
                 >
                   CHECKOUT 💳
                 </button>

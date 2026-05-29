@@ -75,42 +75,53 @@ function MoodChat({ isOpen, onClose }) {
   };
 
   return (
-    <div className={`fixed bottom-24 right-6 w-80 sm:w-96 rounded-3xl shadow-2xl border border-white/10 backdrop-blur-2xl overflow-hidden z-50 transition-all duration-500 origin-bottom-right bg-stone-900/90 ${isOpen ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-90 translate-y-4 pointer-events-none'}`}>
+    <div 
+      className={`fixed bottom-28 right-8 w-80 sm:w-96 border-4 border-white bg-black/95 backdrop-blur-2xl overflow-hidden z-50 transition-all duration-500 origin-bottom-right ${
+        isOpen ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-95 translate-y-8 pointer-events-none'
+      }`}
+      style={{
+        boxShadow: isOpen 
+          ? `10px 10px 0px 0px #ffffff, 0 15px 40px -10px ${moodData.glowColor || 'rgba(255,255,255,0.2)'}` 
+          : 'none'
+      }}
+    >
       {/* Header */}
-      <div className={`p-4 border-b border-white/10 flex justify-between items-center ${moodData.accentClass} bg-opacity-20`}>
+      <div className={`p-4 border-b-4 border-white flex justify-between items-center ${moodData.accentClass}`}>
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-white/20 to-white/5 flex items-center justify-center animate-pulse">
+          <div className="w-8 h-8 rounded-none bg-black border-2 border-white flex items-center justify-center animate-pulse text-white">
             ✨
           </div>
           <div>
-            <h3 className="text-white font-semibold font-outfit text-sm">Mood2Meal AI</h3>
-            <p className={`text-xs ${moodData.textAccent}`}>Online</p>
+            <h3 className="font-black font-outfit text-sm uppercase tracking-wider">Mood2Meal AI</h3>
+            <p className="text-[10px] font-bold uppercase tracking-widest opacity-85">AI Assistant Active</p>
           </div>
         </div>
-        <button onClick={onClose} className="text-white/50 hover:text-white transition">
+        <button onClick={onClose} className="text-current hover:scale-110 font-bold transition cursor-pointer text-lg">
           ✕
         </button>
       </div>
 
       {/* Chat Area */}
-      <div className="p-4 h-80 overflow-y-auto flex flex-col gap-3 custom-scrollbar">
+      <div className="p-4 h-80 overflow-y-auto flex flex-col gap-3 custom-scrollbar bg-black/40">
         {messages.map((msg, idx) => (
           <div key={idx} className={`flex ${msg.sender === "user" ? "justify-end" : "justify-start"}`}>
-            <div className={`max-w-[80%] p-3 rounded-2xl text-sm ${
-              msg.sender === "user" 
-                ? `${moodData.accentClass} text-white rounded-br-sm shadow-lg` 
-                : "bg-white/10 text-stone-100 rounded-bl-sm border border-white/5"
-            }`}>
+            <div 
+              className={`max-w-[80%] p-3.5 border-2 text-sm uppercase tracking-wide font-bold ${
+                msg.sender === "user" 
+                  ? `${moodData.accentClass} border-black shadow-[3px_3px_0_0_white]` 
+                  : "bg-zinc-900/90 text-stone-100 border-white/20"
+              }`}
+            >
               {msg.text}
             </div>
           </div>
         ))}
         {isTyping && (
           <div className="flex justify-start">
-            <div className="bg-white/10 p-3 rounded-2xl rounded-bl-sm flex gap-1 items-center border border-white/5">
-              <span className="w-2 h-2 rounded-full bg-white/50 animate-bounce" style={{ animationDelay: "0ms" }}></span>
-              <span className="w-2 h-2 rounded-full bg-white/50 animate-bounce" style={{ animationDelay: "150ms" }}></span>
-              <span className="w-2 h-2 rounded-full bg-white/50 animate-bounce" style={{ animationDelay: "300ms" }}></span>
+            <div className="bg-zinc-900/95 p-3 flex gap-1.5 items-center border-2 border-white/10">
+              <span className="w-2.5 h-2.5 rounded-full bg-white animate-bounce" style={{ animationDelay: "0ms" }}></span>
+              <span className="w-2.5 h-2.5 rounded-full bg-white animate-bounce" style={{ animationDelay: "150ms" }}></span>
+              <span className="w-2.5 h-2.5 rounded-full bg-white animate-bounce" style={{ animationDelay: "300ms" }}></span>
             </div>
           </div>
         )}
@@ -118,10 +129,14 @@ function MoodChat({ isOpen, onClose }) {
       </div>
 
       {/* Input Area */}
-      <div className="p-3 border-t border-white/10 flex gap-2 items-center bg-black/20">
+      <div className="p-3 border-t-4 border-white flex gap-2 items-center bg-zinc-900/80">
         <button 
           onClick={startListening}
-          className={`p-2 transition rounded-full ${isListening ? 'bg-red-500 text-white animate-pulse shadow-[0_0_15px_rgba(239,68,68,0.5)]' : 'text-white/50 hover:text-white hover:bg-white/10'}`}
+          className={`p-2 transition border-2 cursor-pointer flex items-center justify-center w-10 h-10 ${
+            isListening 
+              ? 'bg-red-500 text-white border-white animate-pulse shadow-[0_0_15px_rgba(239,68,68,0.5)]' 
+              : 'text-white border-white bg-black hover:bg-white hover:text-black'
+          }`}
           title="Speak to AI"
         >
           🎤
@@ -132,11 +147,11 @@ function MoodChat({ isOpen, onClose }) {
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && handleSend(input)}
           placeholder={isListening ? "Listening..." : "How are you feeling?"}
-          className="flex-grow bg-white/5 border border-white/10 rounded-full px-4 py-2 text-sm text-white focus:outline-none focus:border-white/30 transition placeholder-white/30"
+          className="flex-grow bg-black border-2 border-white/30 focus:border-white px-4 py-2 text-sm text-white focus:outline-none transition placeholder-white/30 uppercase font-bold"
         />
         <button 
           onClick={() => handleSend(input)}
-          className={`w-10 h-10 rounded-full ${moodData.accentClass} flex items-center justify-center text-white hover:brightness-110 transition shadow-lg`}
+          className={`w-10 h-10 border-2 border-white cursor-pointer ${moodData.accentClass} flex items-center justify-center text-xl hover:brightness-110 active:scale-95 transition shadow-[2px_2px_0_0_white]`}
         >
           ➤
         </button>

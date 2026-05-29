@@ -49,6 +49,16 @@ export function MoodProvider({ children }) {
     }
   };
 
+  const changeTrack = (trackId) => {
+    if (soundscapes[trackId]) {
+      audioRef.current.pause();
+      audioRef.current.src = soundscapes[trackId];
+      if (!isMuted) {
+        audioRef.current.play().catch(e => console.log("Audio play blocked:", e));
+      }
+    }
+  };
+
   const toggleMute = () => {
     if (isMuted) {
       audioRef.current.play().catch(e => console.log("Audio play blocked:", e));
@@ -60,7 +70,7 @@ export function MoodProvider({ children }) {
   };
 
   return (
-    <MoodContext.Provider value={{ currentMood, moodData, changeMood, isMuted, toggleMute }}>
+    <MoodContext.Provider value={{ currentMood, moodData, changeMood, isMuted, toggleMute, changeTrack, soundscapes }}>
       {children}
     </MoodContext.Provider>
   );

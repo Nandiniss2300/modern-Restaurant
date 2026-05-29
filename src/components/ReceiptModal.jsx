@@ -1,11 +1,44 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 
 function ReceiptModal({ cartItems, cartTotal, moodData, onClose }) {
   // Generate random data for the receipt
-  const orderNumber = Math.floor(Math.random() * 90000) + 10000;
-  const hypeScore = Math.floor(Math.random() * 20) + 80;
-  const date = new Date().toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: '2-digit' });
-  const time = new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+  const orderNumber = useRef(Math.floor(Math.random() * 90000) + 10000).current;
+  const hypeScore = useRef(Math.floor(Math.random() * 20) + 80).current;
+  const date = useRef(new Date().toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: '2-digit' })).current;
+  const time = useRef(new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })).current;
+
+  // Auto-persist receipt to localStorage on checkout completion
+  useEffect(() => {
+    const storedUser = localStorage.getItem("vibecheck_user");
+    if (!storedUser) return;
+    const user = JSON.parse(storedUser);
+    const userKey = user.username.toUpperCase();
+
+    const newReceipt = {
+      orderNumber,
+      date,
+      time,
+      total: cartTotal,
+      hypeScore,
+      moodName: moodData.name,
+      items: cartItems.map(item => ({
+        name: item.name,
+        quantity: item.quantity,
+        price: item.price
+      }))
+    };
+
+    const allReceipts = JSON.parse(localStorage.getItem("vibecheck_receipts") || "{}");
+    if (!allReceipts[userKey]) {
+      allReceipts[userKey] = [];
+    }
+    
+    // Prevent double-saving the exact same order number
+    if (!allReceipts[userKey].some(r => r.orderNumber === orderNumber)) {
+      allReceipts[userKey].unshift(newReceipt);
+      localStorage.setItem("vibecheck_receipts", JSON.stringify(allReceipts));
+    }
+  }, [cartItems, cartTotal, moodData, orderNumber, date, time, hypeScore]);
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
